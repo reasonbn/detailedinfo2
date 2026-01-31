@@ -3,26 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pohang Makers Map - Clean Move</title>
+    <title>Pohang Makers Map - Fast & Fixed</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
-        
         html, body { height: 100%; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; color: #333; overflow: hidden; }
-        
         body { display: flex; flex-direction: row; }
         #map { flex: 2; height: 100%; background-color: #f8f9fa; z-index: 1; }
-        
-        #sidebar { 
-            flex: 1; min-width: 400px; height: 100%; 
-            background: #fff; position: relative; 
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1); z-index: 2;
-        }
+        #sidebar { flex: 1; min-width: 400px; height: 100%; background: #fff; position: relative; box-shadow: -2px 0 10px rgba(0,0,0,0.1); z-index: 2; }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            #map { flex: none; height: 60%; width: 100%; } 
-            #sidebar { flex: none; width: 100%; min-width: 0; height: 40%; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); }
+            #map { flex: none; height: 60%; width: 100%; }
+            #sidebar { flex: none; width: 100%; min-width: 0; height: 40%; border-top: 1px solid #eee; }
             .company-item { width: 100% !important; padding: 12px 5px !important; font-size: 15px !important; }
             .map-title-overlay { top: 15px; left: 15px; transform: scale(0.85); transform-origin: top left; }
             .detail-view { padding: 30px 25px !important; }
@@ -32,41 +25,23 @@
         .map-title-overlay { position: absolute; top: 30px; left: 30px; z-index: 1000; text-align: center; pointer-events: none; }
         .title-bubble { background: #333; color: white; padding: 8px 25px; border-radius: 20px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .map-label { background: #fff; border: 2px solid #333; padding: 5px 35px; border-radius: 20px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-
-        .list-view { padding: 40px; height: 100%; overflow-y: auto; box-sizing: border-box; background: white; }
+        .list-view { padding: 40px; height: 100%; overflow-y: auto; box-sizing: border-box; }
         .company-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; }
-        .company-item { width: 50%; margin-bottom: 15px; cursor: pointer; font-size: 14px; display: flex; align-items: center; transition: color 0.2s; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
-        .company-item:hover { color: #50bcdf; font-weight: bold; }
+        .company-item { width: 50%; margin-bottom: 15px; cursor: pointer; font-size: 14px; display: flex; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
         .company-id-num { display: inline-block; width: 25px; color: #888; font-size: 12px; font-weight: bold; }
 
-        .detail-view { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            color: white; padding: 50px 35px; box-sizing: border-box; display: none; 
-            z-index: 10; overflow-y: auto; transition: background-color 0.3s;
-        }
-        .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 30px; cursor: pointer; opacity: 0.8; z-index: 20; }
-        
+        .detail-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; color: white; padding: 50px 35px; box-sizing: border-box; display: none; z-index: 10; overflow-y: auto; }
+        .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 30px; cursor: pointer; }
         .detail-header { display: flex; align-items: center; margin-bottom: 2px; } 
-        .detail-id-box { 
-            font-size: 20px; border: 2px solid white; width: 44px; height: 44px; 
-            display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; margin-right: 15px; font-weight: bold; flex-shrink: 0;
-            line-height: 1; box-sizing: border-box;
-        }
-        .detail-name { font-size: 26px; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .detail-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 20px; padding-left: 60px; font-weight: 400; } 
+        .detail-id-box { font-size: 20px; border: 2px solid white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-right: 15px; font-weight: bold; flex-shrink: 0; }
+        .detail-name { font-size: 26px; font-weight: bold; }
+        .detail-subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 20px; padding-left: 60px; } 
         .info-item { display: flex; align-items: flex-start; margin-bottom: 5px; font-size: 14px; } 
-        .info-icon { margin-right: 12px; font-size: 16px; width: 20px; text-align: center; }
         .section-title { font-weight: bold; font-size: 15px; margin-top: 25px; margin-bottom: 8px; border-left: 3px solid white; padding-left: 10px; }
-        .section-content { font-size: 13px; line-height: 1.6; opacity: 0.95; margin-bottom: 10px; }
+        .section-content { font-size: 13px; line-height: 1.6; opacity: 0.95; }
 
-        .custom-marker {
-            width: 36px; height: 36px; border: 2px solid white; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .marker-active .custom-marker { transform: scale(1.4); border-color: #333; }
+        .custom-marker { width: 36px; height: 36px; border: 2px solid white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .marker-active .custom-marker { transform: scale(1.3); border-color: #333; }
     </style>
 </head>
 <body>
@@ -77,38 +52,30 @@
 </div>
 
 <div id="map"></div>
-
 <div id="sidebar">
     <div class="list-view" id="listView">
         <h2 style="margin: 0 0 20px 0; font-size: 18px; border-bottom: 2px solid #333; padding-bottom: 10px;">참여 기업 리스트</h2>
         <ul class="company-list" id="main-company-list"></ul>
     </div>
-
     <div class="detail-view" id="detailView">
-        <button class="close-btn" onclick="closeDetailView()">&times;</button>
+        <button class="close-btn" onclick="showListView()">&times;</button>
         <div class="detail-header">
             <div class="detail-id-box" id="detailId">0</div>
-            <div class="detail-name" id="detailName">업체명</div>
+            <div class="detail-name" id="detailName"></div>
         </div>
-        <div class="detail-subtitle" id="detailSubTitle">소제목</div>
-        <div class="info-item"><div class="info-icon">📍</div><div class="info-text" id="detailAddress">주소</div></div>
-        <div class="info-item"><div class="info-icon">📞</div><div class="info-text" id="detailPhone">전화번호</div></div>
-        <div class="section-title">기본 설명</div><div class="section-content" id="detailDesc">설명</div>
-        <div class="section-title">머신아트랩 관련성</div><div class="section-content" id="detailLabRelation">관련성</div>
-        <div class="section-title">세부 참여 내용</div><div class="section-content" id="detailParticipation">참여내용</div>
+        <div class="detail-subtitle" id="detailSubTitle"></div>
+        <div class="info-item">📍 <span id="detailAddress" style="margin-left:10px"></span></div>
+        <div class="info-item">📞 <span id="detailPhone" style="margin-left:10px"></span></div>
+        <div class="section-title">기본 설명</div><div class="section-content" id="detailDesc"></div>
+        <div class="section-title">머신아트랩 관련성</div><div class="section-content" id="detailLabRelation"></div>
+        <div class="section-title">세부 참여 내용</div><div class="section-content" id="detailParticipation"></div>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // 카테고리 데이터 및 업체 데이터 생략 (동일함)
-    const categorySettings = { 
-    '유압·유공압': { color: '#51E155', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>` }, 
-    '철 공급·정밀가공': { color: '#FDAE3B', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M5 4H19V7C16 7 14 9.5 14 12C14 14.5 16 17 19 17V20H5V17C8 17 10 14.5 10 12C10 9.5 8 7 5 7V4Z" /></svg>` }, 
-    '공구·MRO': { color: '#FE297B', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M22.7,19L13.6,9.9C14.5,7.6 14,4.9 12.1,3C10.1,1 7.1,0.6 4.7,1.7L9,6L6,9L1.7,4.7C0.6,7.1 1,10.1 3,12.1C4.9,14 7.6,14.5 9.9,13.6L19,22.7L22.7,19Z" /></svg>` }, 
-    '도료·미술자재': { color: '#4FB7FE', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22C13.1,22 14,21.1 14,20C14,19.5 13.8,19.1 13.5,18.7C13.2,18.4 13,18 13,17.5A1.5,1.5 0 0,1 14.5,16H16A5,5 0 0,0 21,11C21,6 17,2 12,2M6.5,10C5.7,10 5,9.3 5,8.5C5,7.7 5.7,7 6.5,7C7.3,7 8,7.7 8,8.5C8,9.3 7.3,10 6.5,10M9.5,6C8.7,6 8,5.3 8,4.5C8,3.7 8.7,3 9.5,3C10.3,3 11,3.7 11,4.5C11,5.3 10.3,6 9.5,6M14.5,6C13.7,6 13,5.3 13,4.5C13,3.7 13.7,3 14.5,3C15.3,3 16,3.7 16,4.5C16,5.3 15.3,6 14.5,6M17.5,10C16.7,10 16,9.3 16,8.5C16,7.7 16.7,7 17.5,7C18.3,7 19,7.7 19,8.5C19,9.3 18.3,10 17.5,10Z" /></svg>` } 
-    };
-
+    // [데이터 부분은 사용자님의 기존 데이터와 동일함]
+    const categorySettings = { '유압·유공압': { color: '#51E155', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>` }, '철 공급·정밀가공': { color: '#FDAE3B', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M5 4H19V7C16 7 14 9.5 14 12C14 14.5 16 17 19 17V20H5V17C8 17 10 14.5 10 12C10 9.5 8 7 5 7V4Z" /></svg>` }, '공구·MRO': { color: '#FE297B', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M22.7,19L13.6,9.9C14.5,7.6 14,4.9 12.1,3C10.1,1 7.1,0.6 4.7,1.7L9,6L6,9L1.7,4.7C0.6,7.1 1,10.1 3,12.1C4.9,14 7.6,14.5 9.9,13.6L19,22.7L22.7,19Z" /></svg>` }, '도료·미술자재': { color: '#4FB7FE', icon: `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22C13.1,22 14,21.1 14,20C14,19.5 13.8,19.1 13.5,18.7C13.2,18.4 13,18 13,17.5A1.5,1.5 0 0,1 14.5,16H16A5,5 0 0,0 21,11C21,6 17,2 12,2M6.5,10C5.7,10 5,9.3 5,8.5C5,7.7 5.7,7 6.5,7C7.3,7 8,7.7 8,8.5C8,9.3 7.3,10 6.5,10M9.5,6C8.7,6 8,5.3 8,4.5C8,3.7 8.7,3 9.5,3C10.3,3 11,3.7 11,4.5C11,5.3 10.3,6 9.5,6M14.5,6C13.7,6 13,5.3 13,4.5C13,3.7 13.7,3 14.5,3C15.3,3 16,3.7 16,4.5C16,5.3 15.3,6 14.5,6M17.5,10C16.7,10 16,9.3 16,8.5C16,7.7 16.7,7 17.5,7C18.3,7 19,7.7 19,8.5C19,9.3 18.3,10 17.5,10Z" /></svg>` } };
     const companies = [
         { category: '유압·유공압', name: '서원유공압시스템', lat: 35.9100, lng: 128.5900, addr: '대구 북구 유통단지로 16', tel: '053-604-0809', subTitle: '유압 실린더 및 밸브 제작', desc: '다양한 산업 현장에 맞춤형 유압 실린더와 제어 밸브를 제작하여 공급합니다.', labRelation: '특수 규격의 유압 부품 제작 가능 여부를 확인하고 협력합니다.', participation: '머신아트 프로젝트에 필요한 비규격 소형 유압 유닛의 시제품을 제작했습니다.' },
         { category: '유압·유공압', name: '(주)현대 FA', lat: 36.0020, lng: 129.3420, addr: '경북 포항시 남구 연일읍 형산강남로 418번길 65', tel: '054-285-6318', subTitle: '공장 자동화 유압 솔루션', desc: '자동화 공정의 유압 및 공압 시스템을 설계하고 관리하는 기술 중심 기업입니다.', labRelation: '대형 조형물의 안정적인 구동을 위한 시스템 통합 자문을 담당합니다.', participation: '메인 구동부의 유압 라인 배치 및 누유 방지를 위한 하우징 설계에 참여했습니다.' },
@@ -131,7 +98,7 @@
 
     let currentPolyline = null;
     let selectedMarker = null;
-    let activeMoveHandler = null;
+    let currentUpdateFn = null; // 리스너 관리를 위한 변수
 
     function init() {
         const listUl = document.getElementById('main-company-list');
@@ -180,25 +147,20 @@
         document.getElementById('detailLabRelation').innerText = company.labRelation;
         document.getElementById('detailParticipation').innerText = company.participation;
 
-        // [수정된 부분] 강제 패딩 이동 로직 삭제 -> 단순 이동
-        map.invalidateSize();
-        map.flyTo([company.lat, company.lng], 15, { animate: true, duration: 0.5 });
+        // [오류 해결 1] 지도 위치 이동 전 갱신 (직관적 이동)
+        map.invalidateSize(); 
+        map.setView([company.lat, company.lng], 14); 
         
-        clearLineAndListeners();
-        // 이동이 완전히 끝난 후 선이 생기도록 시간차를 줌 (훨씬 부드러움)
-        setTimeout(() => drawLinkLine(marker, company), 550); 
-    }
-
-    function clearLineAndListeners() {
-        if (currentPolyline) { map.removeLayer(currentPolyline); currentPolyline = null; }
-        if (activeMoveHandler) { map.off('move', activeMoveHandler); map.off('zoom', activeMoveHandler); activeMoveHandler = null; }
+        // [오류 해결 2] 선 그리기 루틴
+        drawLinkLine(marker, company);
     }
 
     function drawLinkLine(marker, company) {
-        clearLineAndListeners();
-        currentPolyline = L.polyline([], { color: categorySettings[company.category].color, weight: 4, opacity: 0.8 }).addTo(map);
-        activeMoveHandler = () => {
-            if (!currentPolyline || !marker) return;
+        // 기존 선 및 리스너 완전 제거
+        if (currentPolyline) map.removeLayer(currentPolyline);
+        if (currentUpdateFn) map.off('move', currentUpdateFn);
+
+        const updateLine = () => {
             const markerLatLng = marker.getLatLng();
             let panelPoint;
             if (window.innerWidth <= 768) {
@@ -208,25 +170,34 @@
             }
             currentPolyline.setLatLngs([markerLatLng, panelPoint]);
         };
-        activeMoveHandler();
-        map.on('move', activeMoveHandler);
-        map.on('zoom', activeMoveHandler);
+
+        currentPolyline = L.polyline([marker.getLatLng(), marker.getLatLng()], {
+            color: 'white', weight: 3, opacity: 0.7, dashArray: '5, 5'
+        }).addTo(map);
+
+        currentUpdateFn = updateLine; // 현재 함수 저장
+        updateLine();
+        map.on('move', currentUpdateFn);
     }
 
-    function closeDetailView() {
-        clearLineAndListeners();
+    function showListView() {
+        // [오류 해결 3] X 누르면 선 제거 및 리스너 해제
+        if (currentPolyline) { map.removeLayer(currentPolyline); currentPolyline = null; }
+        if (currentUpdateFn) { map.off('move', currentUpdateFn); currentUpdateFn = null; }
+        
         if (selectedMarker) { 
             L.DomUtil.removeClass(selectedMarker.getElement(), 'marker-active'); 
             selectedMarker.setZIndexOffset(0);
             selectedMarker = null; 
         }
+        
         document.getElementById('detailView').style.display = 'none';
         document.getElementById('listView').style.display = 'block';
 
-        // [수정된 부분] 닫을 때도 깔끔하게 원래 영역으로 복귀
+        // 지도 원상복귀
         map.invalidateSize();
         const bounds = L.latLngBounds(companies.map(c => [c.lat, c.lng]));
-        map.flyToBounds(bounds, { padding: [50, 50], duration: 0.5 });
+        map.fitBounds(bounds, { padding: [50, 50] });
     }
 
     init();
